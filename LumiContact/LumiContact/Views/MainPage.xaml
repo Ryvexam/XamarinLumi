@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LumiContact.ViewModels"
+             xmlns:conv="clr-namespace:LumiContact.Converters"
+             x:Class="LumiContact.Views.MainPage"
+             BackgroundColor="{DynamicResource AppBg}">
+
+    <ContentPage.BindingContext>
+        <vm:MainViewModel />
+    </ContentPage.BindingContext>
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <conv:StringNullOrEmptyBoolConverter x:Key="StringNullOrEmptyBoolConverter" />
+            
+            <!-- Light Theme Defaults (Will be swapped by CodeBehind) -->
+            <Color x:Key="AppBg">#EFECE7</Color>
+            <Color x:Key="ContainerBg">#FCFBF8</Color>
+            <Color x:Key="TextMain">#1A1A1A</Color>
+            <Color x:Key="TextMuted">#8C8C8C</Color>
+            <Color x:Key="Border">#EAEAEA</Color>
+            <Color x:Key="BorderStrong">#D1D1D1</Color>
+            <Color x:Key="Accent">#AA8655</Color>
+            <Color x:Key="AccentText">#FFFFFF</Color>
+            <Color x:Key="InputBg">#F2F0EB</Color>
+            <Color x:Key="ToastBg">#FFFFFF</Color>
+            <Color x:Key="AvatarBg">#F2F0EB</Color>
+            <Color x:Key="HeaderGrad">#FCFBF8</Color>
+            <Color x:Key="Transparent">Transparent</Color>
+
+            <Style TargetType="Label">
+                <Setter Property="FontFamily" Value="HelveticaNeue, Helvetica, Arial, sans-serif" />
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid>
+        <!-- Mobile Centered Container Simulation (if on tablet/desktop it stays centered) -->
+        <Frame HorizontalOptions="Center" 
+               VerticalOptions="FillAndExpand" 
+               WidthRequest="450" 
+               Padding="0" 
+               CornerRadius="0" 
+               BackgroundColor="{DynamicResource ContainerBg}" 
+               HasShadow="True"
+               BorderColor="{DynamicResource Border}">
+            
+            <Grid>
+                <!-- TOAST NOTIFICATION -->
+                <Frame x:Name="ToastView" 
+                       IsVisible="{Binding IsToastVisible}"
+                       BackgroundColor="{DynamicResource ToastBg}" 
+                       BorderColor="{DynamicResource Accent}" 
+                       CornerRadius="20" 
+                       Padding="15,10" 
+                       HasShadow="True" 
+                       HorizontalOptions="Center" 
+                       VerticalOptions="Start" 
+                       Margin="0,20,0,0"
+                       Opacity="0"
+                       TranslationY="-20">
+                    <StackLayout Orientation="Horizontal" Spacing="10">
+                        <Path Aspect="Uniform" Data="M20 6L9 17l-5-5" Stroke="{DynamicResource AccentBrush}" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"/>
+                        <Label Text="{Binding ToastMessage}" TextColor="{DynamicResource Accent}" FontSize="14" VerticalOptions="Center"/>
+                    </StackLayout>
+                </Frame>
+
+                <!-- ================= VUE LISTE ================= -->
+                <Grid x:Name="ListView" RowDefinitions="Auto, *" BackgroundColor="{DynamicResource ContainerBg}">
+                    
+                    <!-- Header -->
+                    <Grid Grid.Row="0" Padding="24,48,24,24" RowDefinitions="Auto, Auto">
+                        <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,24">
+                            <Label Text="LumiContact." FontSize="32" FontAttributes="Bold" TextColor="{DynamicResource TextMain}" VerticalOptions="Center" />
+                            
+                            <StackLayout Grid.Column="1" Orientation="Horizontal" Spacing="16" VerticalOptions="Center">
+                                <!-- Sync Icon -->
+                                <Path Aspect="Uniform" Data="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" Stroke="{DynamicResource TextMutedBrush}" StrokeThickness="1.5" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="20" HeightRequest="20" VerticalOptions="Center">
+                                    <Path.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding SyncCommand}"/>
+                                    </Path.GestureRecognizers>
+                                </Path>
+                                <!-- Settings Icon -->
+                                <Path Aspect="Uniform" Data="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915 M 9,12 a 3,3 0 1,0 6,0 a 3,3 0 1,0 -6,0" Stroke="{DynamicResource TextMutedBrush}" StrokeThickness="1.5" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="20" HeightRequest="20" VerticalOptions="Center">
+                                    <Path.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding OpenSettingsCommand}"/>
+                                    </Path.GestureRecognizers>
+                                </Path>
+                                <!-- Add Icon -->
+                                <Path Aspect="Uniform" Data="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M 5,7 a 4,4 0 1,0 8,0 a 4,4 0 1,0 -8,0 M19 8 L19 14 M22 11 L16 11" Stroke="{DynamicResource AccentBrush}" StrokeThickness="1.5" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="22" HeightRequest="22" VerticalOptions="Center" Margin="8,0,0,0">
+                                    <Path.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding OpenAddCommand}"/>
+                                    </Path.GestureRecognizers>
+                                </Path>
+                            </StackLayout>
+                        </Grid>
+
+                        <!-- Search -->
+                        <Frame Grid.Row="1" BackgroundColor="{DynamicResource InputBg}" CornerRadius="24" Padding="15,0" HasShadow="False" HeightRequest="48">
+                            <Grid ColumnDefinitions="Auto, *">
+                                <Path Aspect="Uniform" Data="M21 21l-4.34-4.34 M 3,11 a 8,8 0 1,0 16,0 a 8,8 0 1,0 -16,0" Stroke="{DynamicResource TextMutedBrush}" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" Margin="0,0,10,0"/>
+                                <Entry Grid.Column="1" Text="{Binding SearchText}" Placeholder="Rechercher..." 
+                                       TextColor="{DynamicResource TextMain}" PlaceholderColor="{DynamicResource TextMuted}"
+                                       BackgroundColor="Transparent" FontSize="14" VerticalOptions="Center"/>
+                            </Grid>
+                        </Frame>
+                    </Grid>
+
+                    <!-- List -->
+                    <CollectionView Grid.Row="1" 
+                                    ItemsSource="{Binding GroupedContacts}" 
+                                    IsGrouped="True"
+                                    SelectionMode="Single"
+                                    SelectedItem="{Binding SelectedContact}"
+                                    SelectionChangedCommand="{Binding SelectContactCommand}">
+                        <CollectionView.ItemsLayout>
+                            <LinearItemsLayout Orientation="Vertical" ItemSpacing="4"/>
+                        </CollectionView.ItemsLayout>
+                        
+                        <CollectionView.EmptyView>
+                            <StackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="16" Margin="0,100,0,0" Opacity="0.5">
+                                <Path Aspect="Uniform" Data="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M 5,7 a 4,4 0 1,0 8,0 a 4,4 0 1,0 -8,0 M19 8 L19 14 M22 11 L16 11" Stroke="{DynamicResource TextMutedBrush}" StrokeThickness="1.5" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="48" HeightRequest="48" HorizontalOptions="Center"/>
+                                <Label Text="Le carnet est vide." FontSize="16" TextColor="{DynamicResource TextMuted}" HorizontalOptions="Center"/>
+                            </StackLayout>
+                        </CollectionView.EmptyView>
+
+                        <CollectionView.GroupHeaderTemplate>
+                            <DataTemplate>
+                                <StackLayout Padding="24,10,24,5">
+                                    <Label Text="{Binding Name}" TextColor="{DynamicResource Accent}" FontAttributes="Bold" FontSize="18"/>
+                                    <BoxView HeightRequest="1" Color="{DynamicResource Border}" Margin="0,4,0,0"/>
+                                </StackLayout>
+                            </DataTemplate>
+                        </CollectionView.GroupHeaderTemplate>
+
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Padding="24,4">
+                                    <Frame BackgroundColor="{DynamicResource Transparent}" CornerRadius="16" Padding="12" HasShadow="False">
+                                        <Frame.Triggers>
+                                            <!-- Simple pseudo-hover state for mobile tap -->
+                                            <DataTrigger TargetType="Frame" Binding="{Binding IsSelected}" Value="True">
+                                                <Setter Property="BackgroundColor" Value="{DynamicResource InputBg}" />
+                                            </DataTrigger>
+                                        </Frame.Triggers>
+                                        
+                                        <Grid ColumnDefinitions="56, *">
+                                            <!-- Avatar -->
+                                            <Grid Grid.Column="0" HeightRequest="56" WidthRequest="56">
+                                                <Frame BackgroundColor="{DynamicResource AvatarBg}" CornerRadius="28" Padding="0" HasShadow="False"
+                                                       IsVisible="{Binding PhotoPath, Converter={StaticResource StringNullOrEmptyBoolConverter}}">
+                                                    <Label Text="{Binding Initial}" TextColor="{DynamicResource TextMuted}" FontSize="20" FontAttributes="Bold" 
+                                                           HorizontalOptions="Center" VerticalOptions="Center"/>
+                                                </Frame>
+                                                <Frame Padding="0" CornerRadius="28" HasShadow="False" IsVisible="{Binding PhotoPath, Converter={StaticResource StringNullOrEmptyBoolConverter}, ConverterParameter=Invert}">
+                                                    <Image Source="{Binding PhotoPath}" Aspect="AspectFill" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                                                </Frame>
+                                            </Grid>
+
+                                            <!-- Info -->
+                                            <StackLayout Grid.Column="1" VerticalOptions="Center" Margin="16,0,0,0" Spacing="2">
+                                                <StackLayout Orientation="Horizontal">
+                                                    <Label Text="{Binding FirstName}" FontSize="16" TextColor="{DynamicResource TextMain}"/>
+                                                    <Label Text="{Binding LastName}" FontSize="16" FontAttributes="Bold" TextColor="{DynamicResource TextMain}"/>
+                                                </StackLayout>
+                                                <Label Text="{Binding Phone}" TextColor="{DynamicResource TextMuted}" FontSize="14"/>
+                                            </StackLayout>
+                                        </Grid>
+                                    </Frame>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Grid>
+
+                <!-- ================= VUE PARAMÈTRES (SETTINGS) ================= -->
+                <Grid x:Name="SettingsOverlay" IsVisible="{Binding IsSettingsVisible}" BackgroundColor="{DynamicResource ContainerBg}" TranslationX="500">
+                    <Grid RowDefinitions="Auto, *">
+                        <Grid Grid.Row="0" Padding="24,48,24,24" ColumnDefinitions="Auto, *, Auto">
+                            <Path Aspect="Uniform" Data="M15 18l-6-6 6-6" Stroke="{DynamicResource TextMutedBrush}" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="24" HeightRequest="24" VerticalOptions="Center">
+                                <Path.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding CloseSettingsCommand}"/>
+                                </Path.GestureRecognizers>
+                            </Path>
+                            <Label Grid.Column="1" Text="Paramètres" FontSize="20" FontAttributes="Bold" TextColor="{DynamicResource TextMain}" HorizontalOptions="Center" VerticalOptions="Center"/>
+                            <BoxView Grid.Column="2" WidthRequest="24" Color="Transparent"/>
+                        </Grid>
+
+                        <ScrollView Grid.Row="1" Padding="24,16,24,48">
+                            <StackLayout Spacing="40">
+                                
+                                <!-- Apparence -->
+                                <StackLayout Spacing="16">
+                                    <Label Text="APPARENCE" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource TextMuted}"/>
+                                    <Frame BackgroundColor="Transparent" BorderColor="{DynamicResource Border}" CornerRadius="16" Padding="4" HasShadow="False">
+                                        <Grid ColumnDefinitions="*,*">
+                                            <!-- Light Mode -->
+                                            <Frame Grid.Column="0" BackgroundColor="{DynamicResource InputBg}" CornerRadius="12" Padding="0,12" HasShadow="False">
+                                                <Frame.GestureRecognizers>
+                                                    <TapGestureRecognizer Command="{Binding SetThemeCommand}" CommandParameter="light"/>
+                                                </Frame.GestureRecognizers>
+                                                <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="8">
+                                                    <Path Aspect="Uniform" Data="M 8,12 a 4,4 0 1,0 8,0 a 4,4 0 1,0 -8,0 M12 2v2 M12 20v2 M 4.93 4.93 l1.41 1.41 M 17.66 17.66 l1.41 1.41 M2 12h2 M20 12h2 M 6.34 17.66 l-1.41 1.41 M 19.07 4.93 l-1.41 1.41" Stroke="{DynamicResource TextMainBrush}" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="18" HeightRequest="18" VerticalOptions="Center"/>
+                                                    <Label Text="Clair" TextColor="{DynamicResource TextMain}" VerticalOptions="Center"/>
+                                                </StackLayout>
+                                            </Frame>
+                                            <!-- Dark Mode -->
+                                            <Frame Grid.Column="1" BackgroundColor="Transparent" CornerRadius="12" Padding="0,12" HasShadow="False">
+                                                <Frame.GestureRecognizers>
+                                                    <TapGestureRecognizer Command="{Binding SetThemeCommand}" CommandParameter="dark"/>
+                                                </Frame.GestureRecognizers>
+                                                <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="8">
+                                                    <Path Aspect="Uniform" Data="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" Stroke="{DynamicResource TextMutedBrush}" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="18" HeightRequest="18" VerticalOptions="Center"/>
+                                                    <Label Text="Sombre" TextColor="{DynamicResource TextMuted}" VerticalOptions="Center"/>
+                                                </StackLayout>
+                                            </Frame>
+                                        </Grid>
+                                    </Frame>
+                                </StackLayout>
+
+                                <!-- Synchronisation -->
+                                <StackLayout Spacing="16">
+                                    <Label Text="SAUVEGARDE &amp; CLOUD" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource TextMuted}"/>
+                                    <Frame BackgroundColor="Transparent" BorderColor="{DynamicResource Border}" CornerRadius="16" Padding="0" HasShadow="False">
+                                        <StackLayout Spacing="0">
+                                            
+                                            <!-- Local -->
+                                            <Grid Padding="16" ColumnDefinitions="Auto, *, Auto">
+                                                <Grid.GestureRecognizers>
+                                                    <TapGestureRecognizer Command="{Binding SetCloudTypeCommand}" CommandParameter="local"/>
+                                                </Grid.GestureRecognizers>
+                                                <Frame HeightRequest="40" WidthRequest="40" CornerRadius="20" Padding="0" BackgroundColor="{DynamicResource InputBg}" HasShadow="False">
+                                                    <Path Aspect="Uniform" Data="M 7 2 L 17 2 A 2 2 0 0 1 19 4 L 19 20 A 2 2 0 0 1 17 22 L 7 22 A 2 2 0 0 1 5 20 L 5 4 A 2 2 0 0 1 7 2 Z M12 18h.01" Stroke="{DynamicResource TextMainBrush}" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="18" HeightRequest="18" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                                </Frame>
+                                                <StackLayout Grid.Column="1" VerticalOptions="Center" Margin="16,0,0,0" Spacing="2">
+                                                    <Label Text="Local uniquement" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource TextMain}"/>
+                                                    <Label Text="Données stockées sur cet appareil" FontSize="12" TextColor="{DynamicResource TextMuted}"/>
+                                                </StackLayout>
+                                                <Path Aspect="Uniform" Grid.Column="2" Data="M20 6L9 17l-5-5" Stroke="{DynamicResource AccentBrush}" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="18" HeightRequest="18" VerticalOptions="Center" IsVisible="False" x:Name="CheckLocal"/>
+                                            </Grid>
+                                            <BoxView HeightRequest="1" Color="{DynamicResource Border}"/>
+                                            
+                                            <!-- LumiContact -->
+                                            <Grid Padding="16" ColumnDefinitions="Auto, *, Auto" IsEnabled="False" Opacity="0.5">
+                                                <Grid.GestureRecognizers>
+                                                    <TapGestureRecognizer Command="{Binding SetCloudTypeCommand}" CommandParameter="lumiContact"/>
+                                                </Grid.GestureRecognizers>
+                                                <Frame HeightRequest="40" WidthRequest="40" CornerRadius="20" Padding="0" BackgroundColor="{DynamicResource InputBg}" HasShadow="False">
+                                                    <Path Aspect="Uniform" Data="M 4 2 L 20 2 A 2 2 0 0 1 22 4 L 22 8 A 2 2 0 0 1 20 10 L 4 10 A 2 2 0 0 1 2 8 L 2 4 A 2 2 0 0 1 4 2 Z M 4 14 L 20 14 A 2 2 0 0 1 22 16 L 22 20 A 2 2 0 0 1 20 22 L 4 22 A 2 2 0 0 1 2 20 L 2 16 A 2 2 0 0 1 4 14 Z M 6 6 L 6.01 6 M 6 18 L 6.01 18" Stroke="{DynamicResource TextMainBrush}" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="18" HeightRequest="18" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                                </Frame>
+                                                <StackLayout Grid.Column="1" VerticalOptions="Center" Margin="16,0,0,0" Spacing="2">
+                                                    <Label Text="LumiContact Cloud" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource TextMain}"/>
+                                                    <Label Text="(Pas encore implémenté)" FontSize="12" TextColor="{DynamicResource TextMuted}"/>
+                                                </StackLayout>
+                                                <Path Aspect="Uniform" Grid.Column="2" Data="M20 6L9 17l-5-5" Stroke="{DynamicResource AccentBrush}" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="18" HeightRequest="18" VerticalOptions="Center" IsVisible="False" x:Name="CheckLumiContact"/>
+                                            </Grid>
+
+                                        </StackLayout>
+                                    </Frame>
+                                </StackLayout>
+
+                                <!-- Footer Info -->
+                                <StackLayout HorizontalOptions="Center" Margin="0,32,0,0" Spacing="8">
+                                    <Label Text="LumiContact." FontSize="24" FontAttributes="Bold" TextColor="{DynamicResource TextMain}" HorizontalOptions="Center"/>
+                                    <Label Text="VERSION 1.0 • PROJET XAMARIN" FontSize="10" FontAttributes="Bold" TextColor="{DynamicResource TextMuted}" HorizontalOptions="Center"/>
+                                </StackLayout>
+                            </StackLayout>
+                        </ScrollView>
+                    </Grid>
+                </Grid>
+
+                <!-- ================= VUE DÉTAILS ================= -->
+                <Grid x:Name="DetailOverlay" IsVisible="False" BackgroundColor="{DynamicResource ContainerBg}" TranslationX="500">
+                    <Grid RowDefinitions="Auto, *">
+                        
+                        <!-- Header Gradient & Image -->
+                        <Grid Grid.Row="0" BackgroundColor="{DynamicResource AvatarBg}" Padding="24,48,24,32">
+                            <StackLayout Spacing="0">
+                                <Grid ColumnDefinitions="Auto, *, Auto">
+                                    <Path Aspect="Uniform" Data="M15 18l-6-6 6-6" Stroke="{DynamicResource TextMutedBrush}" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="24" HeightRequest="24" VerticalOptions="Center">
+                                        <Path.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding CloseDetailCommand}"/>
+                                        </Path.GestureRecognizers>
+                                    </Path>
+                                    <Path Aspect="Uniform" Grid.Column="2" Data="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" Stroke="{DynamicResource AccentBrush}" StrokeThickness="1.5" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="20" HeightRequest="20" VerticalOptions="Center">
+                                        <Path.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding EditContactCommand}"/>
+                                        </Path.GestureRecognizers>
+                                    </Path>
+                                </Grid>
+
+                                <Grid HeightRequest="128" WidthRequest="128" HorizontalOptions="Center" Margin="0,32,0,16">
+                                    <Frame BackgroundColor="{DynamicResource ContainerBg}" CornerRadius="64" Padding="0" HasShadow="False" BorderColor="{DynamicResource Accent}"
+                                           IsVisible="{Binding SelectedContact.PhotoPath, Converter={StaticResource StringNullOrEmptyBoolConverter}}">
+                                        <Label Text="{Binding SelectedContact.Initial}" TextColor="{DynamicResource TextMuted}" FontSize="48" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    </Frame>
+                                    <Frame Padding="0" CornerRadius="64" HasShadow="False" BorderColor="{DynamicResource Accent}" IsVisible="{Binding SelectedContact.PhotoPath, Converter={StaticResource StringNullOrEmptyBoolConverter}, ConverterParameter=Invert}">
+                                         <Image Source="{Binding SelectedContact.PhotoPath}" Aspect="AspectFill" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                                    </Frame>
+                                </Grid>
+
+                                <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="6">
+                                    <Label Text="{Binding SelectedContact.FirstName}" FontSize="28" TextColor="{DynamicResource TextMain}"/>
+                                    <Label Text="{Binding SelectedContact.LastName}" FontSize="28" FontAttributes="Bold" TextColor="{DynamicResource TextMain}"/>
+                                </StackLayout>
+                                <Label Text="{Binding SelectedContact.Phone}" TextColor="{DynamicResource Accent}" FontSize="18" HorizontalOptions="Center" Margin="0,8,0,0"/>
+                            </StackLayout>
+                        </Grid>
+
+                        <!-- Actions & Infos -->
+                        <ScrollView Grid.Row="1">
+                            <StackLayout Padding="24" Spacing="24">
+                                
+                                <!-- Quick Actions -->
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="24">
+                                    <StackLayout Grid.Column="0" Spacing="8" HorizontalOptions="Center">
+                                        <StackLayout.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding PhoneCommand}"/>
+                                        </StackLayout.GestureRecognizers>
+                                        <Frame HeightRequest="56" WidthRequest="56" CornerRadius="28" BackgroundColor="{DynamicResource InputBg}" HasShadow="False" Padding="0">
+                                            <Path Aspect="Uniform" Data="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" Stroke="{DynamicResource AccentBrush}" StrokeThickness="1.5" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="22" HeightRequest="22" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        </Frame>
+                                        <Label Text="APPELER" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource TextMuted}" HorizontalOptions="Center"/>
+                                    </StackLayout>
+                                    
+                                    <StackLayout Grid.Column="1" Spacing="8" HorizontalOptions="Center">
+                                        <StackLayout.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding EmailCommand}"/>
+                                        </StackLayout.GestureRecognizers>
+                                        <Frame HeightRequest="56" WidthRequest="56" CornerRadius="28" BackgroundColor="{DynamicResource InputBg}" HasShadow="False" Padding="0">
+                                            <Path Aspect="Uniform" Data="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z M22 6l-10 7L2 6" Stroke="{DynamicResource AccentBrush}" StrokeThickness="1.5" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="22" HeightRequest="22" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        </Frame>
+                                        <Label Text="EMAIL" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource TextMuted}" HorizontalOptions="Center"/>
+                                    </StackLayout>
+                                </Grid>
+
+                                <BoxView HeightRequest="1" Color="{DynamicResource Border}" Margin="0,8"/>
+
+                                <!-- Info Fields -->
+                                <StackLayout Spacing="24">
+                                    <StackLayout Spacing="4" IsVisible="{Binding SelectedContact.Email, Converter={StaticResource StringNullOrEmptyBoolConverter}, ConverterParameter=Invert}">
+                                        <Label Text="EMAIL" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource TextMuted}"/>
+                                        <Label Text="{Binding SelectedContact.Email}" FontSize="16" TextColor="{DynamicResource TextMain}"/>
+                                    </StackLayout>
+
+                                    <StackLayout Spacing="4" IsVisible="{Binding SelectedContact.Comment, Converter={StaticResource StringNullOrEmptyBoolConverter}, ConverterParameter=Invert}">
+                                        <Label Text="NOTES &amp; COMMENTAIRES" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource TextMuted}"/>
+                                        <Frame BackgroundColor="{DynamicResource InputBg}" BorderColor="{DynamicResource Border}" CornerRadius="16" Padding="16" HasShadow="False">
+                                            <Label Text="{Binding SelectedContact.Comment}" FontSize="14" FontAttributes="Italic" TextColor="{DynamicResource TextMain}"/>
+                                        </Frame>
+                                    </StackLayout>
+                                </StackLayout>
+
+                                <!-- Delete Button -->
+                                <Frame BackgroundColor="Transparent" BorderColor="#FF4444" CornerRadius="24" Padding="0,16" HasShadow="False" Margin="0,32,0,0">
+                                    <Frame.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding DeleteContactCommand}" CommandParameter="{Binding SelectedContact}"/>
+                                    </Frame.GestureRecognizers>
+                                    <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="8">
+                                        <Path Aspect="Uniform" Data="M3 6h18 M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2 M10 11v6 M14 11v6" Stroke="#FF4444" StrokeThickness="1.5" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="18" HeightRequest="18" VerticalOptions="Center"/>
+                                        <Label Text="Supprimer le contact" TextColor="#FF4444" FontAttributes="Bold" FontSize="16" VerticalOptions="Center"/>
+                                    </StackLayout>
+                                </Frame>
+                                
+                            </StackLayout>
+                        </ScrollView>
+                    </Grid>
+                </Grid>
+
+                <!-- ================= VUE FORMULAIRE (Add/Edit) ================= -->
+                <Grid x:Name="AddOverlay" IsVisible="False" BackgroundColor="{DynamicResource ContainerBg}" TranslationY="800">
+                    <Grid RowDefinitions="Auto, *">
+                        <Grid Grid.Row="0" Padding="24,48,24,24" ColumnDefinitions="Auto, *, Auto">
+                            <Path Aspect="Uniform" Data="M18 6L6 18 M6 6l12 12" Stroke="{DynamicResource TextMutedBrush}" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="24" HeightRequest="24" VerticalOptions="Center">
+                                <Path.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding CloseAddCommand}"/>
+                                </Path.GestureRecognizers>
+                            </Path>
+                            
+                            <Label Grid.Column="1" Text="Contact" FontSize="20" FontAttributes="Bold" TextColor="{DynamicResource TextMain}" HorizontalOptions="Center" VerticalOptions="Center"/>
+                            
+                            <Label Grid.Column="2" Text="Enregistrer" FontSize="16" FontAttributes="Bold" TextColor="{DynamicResource Accent}" VerticalOptions="Center">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SaveContactCommand}"/>
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </Grid>
+
+                        <ScrollView Grid.Row="1" Padding="32,24">
+                            <StackLayout Spacing="32">
+                                
+                                <!-- Photo Picker -->
+                                <StackLayout HorizontalOptions="Center" Spacing="16">
+                                    <Grid HeightRequest="128" WidthRequest="128" HorizontalOptions="Center">
+                                        <Frame BackgroundColor="{DynamicResource AvatarBg}" CornerRadius="64" Padding="0" HasShadow="False" BorderColor="{DynamicResource Accent}">
+                                            <Frame.GestureRecognizers>
+                                                <TapGestureRecognizer Command="{Binding PickPhotoCommand}"/>
+                                            </Frame.GestureRecognizers>
+                                            <Grid>
+                                                <Image Source="{Binding NewPhotoPath}" Aspect="AspectFill" IsVisible="{Binding NewPhotoPath, Converter={StaticResource StringNullOrEmptyBoolConverter}, ConverterParameter=Invert}"/>
+                                                <!-- Overlay for camera icon -->
+                                                <BoxView Color="#66000000" IsVisible="{Binding NewPhotoPath, Converter={StaticResource StringNullOrEmptyBoolConverter}, ConverterParameter=Invert}"/>
+                                                <Path Aspect="Uniform" Data="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z M 9,13 a 3,3 0 1,0 6,0 a 3,3 0 1,0 -6,0" Stroke="White" StrokeThickness="1.5" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="32" HeightRequest="32" HorizontalOptions="Center" VerticalOptions="Center" />
+                                            </Grid>
+                                        </Frame>
+                                    </Grid>
+                                    <Label Text="AJOUTER UNE PHOTO" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource Accent}" HorizontalOptions="Center">
+                                        <Label.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding PickPhotoCommand}"/>
+                                        </Label.GestureRecognizers>
+                                    </Label>
+                                </StackLayout>
+
+                                <!-- Fields -->
+                                <StackLayout Spacing="24">
+                                    <StackLayout Spacing="8">
+                                        <Label Text="NOM" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource TextMuted}"/>
+                                        <Entry Text="{Binding NewLastName}" Placeholder="Ex: Dupont" BackgroundColor="Transparent" TextColor="{DynamicResource TextMain}" PlaceholderColor="{DynamicResource TextMuted}"/>
+                                        <BoxView HeightRequest="1" Color="{DynamicResource Border}"/>
+                                    </StackLayout>
+
+                                    <StackLayout Spacing="8">
+                                        <Label Text="PRÉNOM" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource TextMuted}"/>
+                                        <Entry Text="{Binding NewFirstName}" Placeholder="Ex: Jean" BackgroundColor="Transparent" TextColor="{DynamicResource TextMain}" PlaceholderColor="{DynamicResource TextMuted}"/>
+                                        <BoxView HeightRequest="1" Color="{DynamicResource Border}"/>
+                                    </StackLayout>
+
+                                    <StackLayout Spacing="8">
+                                        <Label Text="NUMÉRO DE GSM" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource TextMuted}"/>
+                                        <Entry Text="{Binding NewPhone}" Keyboard="Telephone" Placeholder="+33 6 12 34 56 78" BackgroundColor="Transparent" TextColor="{DynamicResource TextMain}" PlaceholderColor="{DynamicResource TextMuted}"/>
+                                        <BoxView HeightRequest="1" Color="{DynamicResource Border}"/>
+                                    </StackLayout>
+
+                                    <StackLayout Spacing="8">
+                                        <Label Text="EMAIL" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource TextMuted}"/>
+                                        <Entry Text="{Binding NewEmail}" Keyboard="Email" Placeholder="jean.dupont@email.com" BackgroundColor="Transparent" TextColor="{DynamicResource TextMain}" PlaceholderColor="{DynamicResource TextMuted}"/>
+                                        <BoxView HeightRequest="1" Color="{DynamicResource Border}"/>
+                                    </StackLayout>
+
+                                    <StackLayout Spacing="8">
+                                        <Label Text="COMMENTAIRE" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource TextMuted}"/>
+                                        <Editor Text="{Binding NewComment}" AutoSize="TextChanges" Placeholder="Rencontré lors de la conférence..." BackgroundColor="Transparent" TextColor="{DynamicResource TextMain}" PlaceholderColor="{DynamicResource TextMuted}" HeightRequest="80"/>
+                                        <BoxView HeightRequest="1" Color="{DynamicResource Border}"/>
+                                    </StackLayout>
+                                </StackLayout>
+
+                                <BoxView HeightRequest="60" Color="Transparent"/>
+                            </StackLayout>
+                        </ScrollView>
+                    </Grid>
+                </Grid>
+
+            </Grid>
+        </Frame>
+    </Grid>
+</ContentPage>
