@@ -38,7 +38,6 @@ namespace LumiContact.Views
             {
                 _viewModel.PropertyChanged += OnViewModelPropertyChanged;
                 ApplyTheme(_viewModel.Theme);
-                UpdateCloudUI(_viewModel.CloudType);
             }
         }
 
@@ -108,10 +107,6 @@ namespace LumiContact.Views
             {
                 ApplyTheme(_viewModel.Theme);
             }
-            else if (e.PropertyName == nameof(MainViewModel.CloudType))
-            {
-                UpdateCloudUI(_viewModel.CloudType);
-            }
         }
 
         private void ApplyTheme(string theme)
@@ -155,12 +150,6 @@ namespace LumiContact.Views
                 Resources["TextMutedBrush"] = new SolidColorBrush(Color.FromHex("#8C8C8C"));
                 Resources["AccentBrush"] = new SolidColorBrush(Color.FromHex("#AA8655"));
             }
-        }
-
-        private void UpdateCloudUI(string cloudType)
-        {
-            if (CheckLumiContact != null) CheckLumiContact.IsVisible = cloudType == "lumiContact";
-            if (CheckLocal != null) CheckLocal.IsVisible = cloudType == "local";
         }
     }
 }

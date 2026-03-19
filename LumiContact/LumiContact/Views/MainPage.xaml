@@ -111,9 +111,7 @@
                     <CollectionView Grid.Row="1" 
                                     ItemsSource="{Binding GroupedContacts}" 
                                     IsGrouped="True"
-                                    SelectionMode="Single"
-                                    SelectedItem="{Binding SelectedContact}"
-                                    SelectionChangedCommand="{Binding SelectContactCommand}">
+                                    SelectionMode="None">
                         <CollectionView.ItemsLayout>
                             <LinearItemsLayout Orientation="Vertical" ItemSpacing="4"/>
                         </CollectionView.ItemsLayout>
@@ -137,37 +135,88 @@
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
                                 <Grid Padding="24,4">
-                                    <Frame BackgroundColor="{DynamicResource Transparent}" CornerRadius="16" Padding="12" HasShadow="False">
-                                        <Frame.Triggers>
-                                            <!-- Simple pseudo-hover state for mobile tap -->
-                                            <DataTrigger TargetType="Frame" Binding="{Binding IsSelected}" Value="True">
-                                                <Setter Property="BackgroundColor" Value="{DynamicResource InputBg}" />
-                                            </DataTrigger>
-                                        </Frame.Triggers>
+                                    <SwipeView>
+                                        <SwipeView.LeftItems>
+                                            <SwipeItems>
+                                                <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MainViewModel}}, Path=CallContactCommand}" CommandParameter="{Binding .}">
+                                                    <Frame BackgroundColor="#4CAF50" CornerRadius="16" HasShadow="False" Padding="0" WidthRequest="72" Margin="0,0,8,0">
+                                                        <Path Aspect="Uniform" Data="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" Stroke="White" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                                    </Frame>
+                                                </SwipeItemView>
+                                            </SwipeItems>
+                                        </SwipeView.LeftItems>
+                                        <SwipeView.RightItems>
+                                            <SwipeItems>
+                                                <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MainViewModel}}, Path=DeleteContactCommand}" CommandParameter="{Binding .}">
+                                                    <Frame BackgroundColor="#F44336" CornerRadius="16" HasShadow="False" Padding="0" WidthRequest="72" Margin="8,0,0,0">
+                                                        <Path Aspect="Uniform" Data="M3 6h18 M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2 M10 11v6 M14 11v6" Stroke="White" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                                    </Frame>
+                                                </SwipeItemView>
+                                            </SwipeItems>
+                                        </SwipeView.RightItems>
                                         
-                                        <Grid ColumnDefinitions="56, *">
-                                            <!-- Avatar -->
-                                            <Grid Grid.Column="0" HeightRequest="56" WidthRequest="56">
-                                                <Frame BackgroundColor="{DynamicResource AvatarBg}" CornerRadius="28" Padding="0" HasShadow="False"
-                                                       IsVisible="{Binding PhotoPath, Converter={StaticResource StringNullOrEmptyBoolConverter}}">
-                                                    <Label Text="{Binding Initial}" TextColor="{DynamicResource TextMuted}" FontSize="20" FontAttributes="Bold" 
-                                                           HorizontalOptions="Center" VerticalOptions="Center"/>
-                                                </Frame>
-                                                <Frame Padding="0" CornerRadius="28" HasShadow="False" IsVisible="{Binding PhotoPath, Converter={StaticResource StringNullOrEmptyBoolConverter}, ConverterParameter=Invert}">
-                                                    <Image Source="{Binding PhotoPath}" Aspect="AspectFill" HorizontalOptions="Fill" VerticalOptions="Fill"/>
-                                                </Frame>
-                                            </Grid>
+                                        <Frame BackgroundColor="{DynamicResource Transparent}" CornerRadius="16" Padding="12" HasShadow="False">
+                                            <Grid ColumnDefinitions="56, *, Auto">
+                                                
+                                                <!-- Hit Target for Row Selection (Behind content, captures taps for Col 0 and 1) -->
+                                                <BoxView Grid.Column="0" Grid.ColumnSpan="2" Color="Transparent">
+                                                    <BoxView.GestureRecognizers>
+                                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MainViewModel}}, Path=SelectContactCommand}" CommandParameter="{Binding .}"/>
+                                                    </BoxView.GestureRecognizers>
+                                                </BoxView>
 
-                                            <!-- Info -->
-                                            <StackLayout Grid.Column="1" VerticalOptions="Center" Margin="16,0,0,0" Spacing="2">
-                                                <StackLayout Orientation="Horizontal">
-                                                    <Label Text="{Binding FirstName}" FontSize="16" TextColor="{DynamicResource TextMain}"/>
-                                                    <Label Text="{Binding LastName}" FontSize="16" FontAttributes="Bold" TextColor="{DynamicResource TextMain}"/>
+                                                <!-- Avatar -->
+                                                <Grid Grid.Column="0" HeightRequest="56" WidthRequest="56" InputTransparent="True">
+                                                    <Frame BackgroundColor="{DynamicResource AvatarBg}" CornerRadius="28" Padding="0" HasShadow="False"
+                                                           IsVisible="{Binding PhotoPath, Converter={StaticResource StringNullOrEmptyBoolConverter}}">
+                                                        <Label Text="{Binding Initial}" TextColor="{DynamicResource TextMuted}" FontSize="20" FontAttributes="Bold" 
+                                                               HorizontalOptions="Center" VerticalOptions="Center"/>
+                                                    </Frame>
+                                                    <Frame Padding="0" CornerRadius="28" HasShadow="False" IsVisible="{Binding PhotoPath, Converter={StaticResource StringNullOrEmptyBoolConverter}, ConverterParameter=Invert}">
+                                                        <Image Source="{Binding PhotoPath}" Aspect="AspectFill" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                                                    </Frame>
+                                                </Grid>
+
+                                                <!-- Info -->
+                                                <StackLayout Grid.Column="1" VerticalOptions="Center" Margin="16,0,0,0" Spacing="2" InputTransparent="True">
+                                                    <StackLayout Orientation="Horizontal">
+                                                        <Label Text="{Binding FirstName}" FontSize="16" TextColor="{DynamicResource TextMain}"/>
+                                                        <Label Text="{Binding LastName}" FontSize="16" FontAttributes="Bold" TextColor="{DynamicResource TextMain}"/>
+                                                    </StackLayout>
+                                                    <Label Text="{Binding Phone}" TextColor="{DynamicResource TextMuted}" FontSize="14"/>
                                                 </StackLayout>
-                                                <Label Text="{Binding Phone}" TextColor="{DynamicResource TextMuted}" FontSize="14"/>
-                                            </StackLayout>
-                                        </Grid>
-                                    </Frame>
+                                                
+                                                <!-- Favorite Button -->
+                                                <Grid Grid.Column="2" VerticalOptions="Center" WidthRequest="40" HeightRequest="40">
+                                                    
+                                                    <!-- Not Favorite: Heart Plus -->
+                                                    <Path Aspect="Uniform" Data="m14.479 19.374-.971.939a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5a5.2 5.2 0 0 1-.219 1.49 M15 15h6 M18 12v6" 
+                                                          Stroke="{DynamicResource TextMutedBrush}" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center">
+                                                        <Path.Triggers>
+                                                            <DataTrigger TargetType="Path" Binding="{Binding IsFavorite}" Value="True">
+                                                                <Setter Property="IsVisible" Value="False"/>
+                                                            </DataTrigger>
+                                                        </Path.Triggers>
+                                                    </Path>
+                                                    
+                                                    <!-- Is Favorite: Heart Handshake (Rose pastel) -->
+                                                    <Path Aspect="Uniform" Data="M19.414 14.414C21 12.828 22 11.5 22 9.5a5.5 5.5 0 0 0-9.591-3.676.6.6 0 0 1-.818.001A5.5 5.5 0 0 0 2 9.5c0 2.3 1.5 4 3 5.5l5.535 5.362a2 2 0 0 0 2.879.052 2.12 2.12 0 0 0-.004-3 2.124 2.124 0 1 0 3-3 2.124 2.124 0 0 0 3.004 0 2 2 0 0 0 0-2.828l-1.881-1.882a2.41 2.41 0 0 0-3.409 0l-1.71 1.71a2 2 0 0 1-2.828 0 2 2 0 0 1 0-2.828l2.823-2.762" 
+                                                          Stroke="#ab6bbd" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" Fill="#33ab6bbd" WidthRequest="22" HeightRequest="22" HorizontalOptions="Center" VerticalOptions="Center" IsVisible="False">
+                                                        <Path.Triggers>
+                                                            <DataTrigger TargetType="Path" Binding="{Binding IsFavorite}" Value="True">
+                                                                <Setter Property="IsVisible" Value="True"/>
+                                                            </DataTrigger>
+                                                        </Path.Triggers>
+                                                    </Path>
+
+                                                    <!-- Transparent overlay button to capture click and prevent row selection -->
+                                                    <Button BackgroundColor="Transparent"
+                                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MainViewModel}}, Path=ToggleFavoriteCommand}" 
+                                                            CommandParameter="{Binding .}" />
+                                                </Grid>
+                                            </Grid>
+                                        </Frame>
+                                    </SwipeView>
                                 </Grid>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
@@ -219,41 +268,26 @@
                                     </Frame>
                                 </StackLayout>
 
-                                <!-- Synchronisation -->
+                                <!-- Outils & Importation -->
                                 <StackLayout Spacing="16">
-                                    <Label Text="SAUVEGARDE &amp; CLOUD" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource TextMuted}"/>
+                                    <Label Text="OUTILS &amp; IMPORTATION" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource TextMuted}"/>
                                     <Frame BackgroundColor="Transparent" BorderColor="{DynamicResource Border}" CornerRadius="16" Padding="0" HasShadow="False">
                                         <StackLayout Spacing="0">
                                             
-                                            <!-- Local -->
+                                            <!-- Importation contacts -->
                                             <Grid Padding="16" ColumnDefinitions="Auto, *, Auto">
                                                 <Grid.GestureRecognizers>
-                                                    <TapGestureRecognizer Command="{Binding SetCloudTypeCommand}" CommandParameter="local"/>
+                                                    <TapGestureRecognizer Command="{Binding ImportContactsCommand}"/>
                                                 </Grid.GestureRecognizers>
                                                 <Frame HeightRequest="40" WidthRequest="40" CornerRadius="20" Padding="0" BackgroundColor="{DynamicResource InputBg}" HasShadow="False">
-                                                    <Path Aspect="Uniform" Data="M 7 2 L 17 2 A 2 2 0 0 1 19 4 L 19 20 A 2 2 0 0 1 17 22 L 7 22 A 2 2 0 0 1 5 20 L 5 4 A 2 2 0 0 1 7 2 Z M12 18h.01" Stroke="{DynamicResource TextMainBrush}" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="18" HeightRequest="18" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                                    <!-- Icon Import -->
+                                                    <Path Aspect="Uniform" Data="M 12 3 L 12 15 M 8 11 L 12 15 L 16 11 M 5 19 L 19 19" Stroke="{DynamicResource TextMainBrush}" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="18" HeightRequest="18" HorizontalOptions="Center" VerticalOptions="Center"/>
                                                 </Frame>
                                                 <StackLayout Grid.Column="1" VerticalOptions="Center" Margin="16,0,0,0" Spacing="2">
-                                                    <Label Text="Local uniquement" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource TextMain}"/>
-                                                    <Label Text="Données stockées sur cet appareil" FontSize="12" TextColor="{DynamicResource TextMuted}"/>
+                                                    <Label Text="Importer depuis le téléphone" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource TextMain}"/>
+                                                    <Label Text="Google Contacts, iCloud, SIM..." FontSize="12" TextColor="{DynamicResource TextMuted}"/>
                                                 </StackLayout>
-                                                <Path Aspect="Uniform" Grid.Column="2" Data="M20 6L9 17l-5-5" Stroke="{DynamicResource AccentBrush}" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="18" HeightRequest="18" VerticalOptions="Center" IsVisible="False" x:Name="CheckLocal"/>
-                                            </Grid>
-                                            <BoxView HeightRequest="1" Color="{DynamicResource Border}"/>
-                                            
-                                            <!-- LumiContact -->
-                                            <Grid Padding="16" ColumnDefinitions="Auto, *, Auto" IsEnabled="False" Opacity="0.5">
-                                                <Grid.GestureRecognizers>
-                                                    <TapGestureRecognizer Command="{Binding SetCloudTypeCommand}" CommandParameter="lumiContact"/>
-                                                </Grid.GestureRecognizers>
-                                                <Frame HeightRequest="40" WidthRequest="40" CornerRadius="20" Padding="0" BackgroundColor="{DynamicResource InputBg}" HasShadow="False">
-                                                    <Path Aspect="Uniform" Data="M 4 2 L 20 2 A 2 2 0 0 1 22 4 L 22 8 A 2 2 0 0 1 20 10 L 4 10 A 2 2 0 0 1 2 8 L 2 4 A 2 2 0 0 1 4 2 Z M 4 14 L 20 14 A 2 2 0 0 1 22 16 L 22 20 A 2 2 0 0 1 20 22 L 4 22 A 2 2 0 0 1 2 20 L 2 16 A 2 2 0 0 1 4 14 Z M 6 6 L 6.01 6 M 6 18 L 6.01 18" Stroke="{DynamicResource TextMainBrush}" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="18" HeightRequest="18" HorizontalOptions="Center" VerticalOptions="Center"/>
-                                                </Frame>
-                                                <StackLayout Grid.Column="1" VerticalOptions="Center" Margin="16,0,0,0" Spacing="2">
-                                                    <Label Text="LumiContact Cloud" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource TextMain}"/>
-                                                    <Label Text="(Pas encore implémenté)" FontSize="12" TextColor="{DynamicResource TextMuted}"/>
-                                                </StackLayout>
-                                                <Path Aspect="Uniform" Grid.Column="2" Data="M20 6L9 17l-5-5" Stroke="{DynamicResource AccentBrush}" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="18" HeightRequest="18" VerticalOptions="Center" IsVisible="False" x:Name="CheckLumiContact"/>
+                                                <Path Aspect="Uniform" Grid.Column="2" Data="M9 18l6-6-6-6" Stroke="{DynamicResource TextMutedBrush}" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="18" HeightRequest="18" VerticalOptions="Center"/>
                                             </Grid>
 
                                         </StackLayout>

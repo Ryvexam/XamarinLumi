@@ -36,6 +36,9 @@ namespace LumiContact.ViewModels
         
         private string _photoPath;
         public string PhotoPath { get => _photoPath; set { _photoPath = value; OnPropertyChanged(); } }
+
+        private bool _isFavorite;
+        public bool IsFavorite { get => _isFavorite; set { _isFavorite = value; OnPropertyChanged(); } }
         
         // LumiContact Aesthetic fields
         public string Color { get; set; }
@@ -221,6 +224,9 @@ namespace LumiContact.ViewModels
         public ICommand SyncCommand { get; }
         public ICommand PhoneCommand { get; }
         public ICommand EmailCommand { get; }
+        public ICommand ToggleFavoriteCommand { get; }
+        public ICommand CallContactCommand { get; }
+        public ICommand ImportContactsCommand { get; }
 
         private bool _isPickingPhoto;
 
@@ -276,8 +282,11 @@ namespace LumiContact.ViewModels
                 ShowToast("Pas encore implémenté");
             });
 
-            SelectContactCommand = new Command(() => {
-                // Handled in setter
+            SelectContactCommand = new Command<Contact>((c) => {
+                if (c != null)
+                {
+                    SelectedContact = c;
+                }
             });
 
             DeleteContactCommand = new Command<Contact>(async (c) => 
@@ -371,6 +380,20 @@ namespace LumiContact.ViewModels
                 
                 if (_editingId == 0)
                 {
+                    // Check for duplicates before creating
+                    bool exists = AllContacts.Any(x => 
+                        (x.FirstName ?? "").Trim().ToLower() == (NewFirstName ?? "").Trim().ToLower() && 
+                        (x.LastName ?? "").Trim().ToLower() == (NewLastName ?? "").Trim().ToLower());
+                        
+                    if (exists)
+                    {
+                        await Application.Current.MainPage.DisplayAlert(
+                            "Doublon", 
+                            "Un contact avec ce nom et prénom existe déjà.", 
+                            "OK");
+                        return; // Prevent saving
+                    }
+
                     var newC = new Contact
                     {
                         FirstName = NewFirstName,
@@ -418,6 +441,107 @@ namespace LumiContact.ViewModels
                     Launcher.OpenAsync(new Uri($"mailto:{SelectedContact.Email}"));
             });
 
+            ToggleFavoriteCommand = new Command<Contact>(async (c) =>
+            {
+                if (c == null) return;
+                c.IsFavorite = !c.IsFavorite;
+                await DatabaseService.SaveContactAsync(c);
+                FilterContacts(); // On rafraîchit la liste pour faire remonter le favori
+                ShowToast(c.IsFavorite ? "Ajouté aux favoris" : "Retiré des favoris");
+            });
+
+            CallContactCommand = new Command<Contact>((c) => {
+                if(c != null && !string.IsNullOrEmpty(c.Phone))
+                    Launcher.OpenAsync(new Uri($"tel:{c.Phone}"));
+            });
+
+            ImportContactsCommand = new Command(async () =>
+            {
+                // Confirmation popup
+                bool confirm = await Application.Current.MainPage.DisplayAlert(
+                    "Importation", 
+                    "Voulez-vous importer les contacts de votre téléphone ? Les doublons seront ignorés.", 
+                    "Oui, importer", 
+                    "Annuler");
+                    
+                if (!confirm) return;
+
+                try
+                {
+                    var status = await Permissions.CheckStatusAsync<Permissions.ContactsRead>();
+                    if (status != PermissionStatus.Granted)
+                    {
+                        status = await Permissions.RequestAsync<Permissions.ContactsRead>();
+                    }
+
+                    if (status == PermissionStatus.Granted)
+                    {
+                        ShowToast("Importation en cours...");
+                        var contacts = await Xamarin.Essentials.Contacts.GetAllAsync();
+                        int count = 0;
+                        
+                        var random = new System.Random();
+                        string[] colors = { "#ab6bbd", "#3498db", "#e74c3c", "#f1c40f", "#2ecc71", "#e67e22" };
+
+                        foreach (var c in contacts)
+                        {
+                            var firstName = string.IsNullOrEmpty(c.GivenName) ? "" : c.GivenName;
+                            var lastName = string.IsNullOrEmpty(c.FamilyName) ? "" : c.FamilyName;
+
+                            // Skip empty contacts
+                            if (string.IsNullOrEmpty(firstName) && string.IsNullOrEmpty(lastName))
+                                continue;
+
+                            // Check for existing duplicate (same first name and last name)
+                            bool exists = AllContacts.Any(x => 
+                                (x.FirstName ?? "") == firstName && 
+                                (x.LastName ?? "") == lastName);
+                                
+                            if (exists) continue;
+
+                            // Fetch photo using DependencyService
+                            string photoPath = null;
+                            var photoService = DependencyService.Get<IContactPhotoService>();
+                            if (photoService != null && !string.IsNullOrEmpty(c.Id))
+                            {
+                                photoPath = photoService.GetContactPhoto(c.Id);
+                            }
+
+                            var newContact = new Contact
+                            {
+                                FirstName = firstName,
+                                LastName = lastName,
+                                Phone = c.Phones?.FirstOrDefault()?.PhoneNumber ?? "",
+                                Email = c.Emails?.FirstOrDefault()?.EmailAddress ?? "",
+                                PhotoPath = photoPath,
+                                Color = colors[random.Next(colors.Length)],
+                                CornerString = "24"
+                            };
+                            
+                            await DatabaseService.SaveContactAsync(newContact);
+                            AllContacts.Add(newContact); // Add to current list so subsequent loop iterations know about it
+                            count++;
+                        }
+                        
+                        await LoadData();
+                        IsSettingsVisible = false; // Close settings after import
+                        
+                        if (count > 0)
+                            ShowToast($"{count} nouveaux contacts importés !");
+                        else
+                            ShowToast("Aucun nouveau contact à importer.");
+                    }
+                    else
+                    {
+                        ShowToast("Permission Contacts refusée.");
+                    }
+                }
+                catch (System.Exception)
+                {
+                    ShowToast("Erreur lors de l'importation.");
+                }
+            });
+
             Task.Run(async () => await LoadData());
         }
 
@@ -463,13 +587,27 @@ namespace LumiContact.ViewModels
                 .OrderBy(x => x.LastName ?? "")
                 .ThenBy(x => x.FirstName ?? "")
                 .ToList();
+
+            var favorites = filtered.Where(x => x.IsFavorite).ToList();
+            var others = filtered.Where(x => !x.IsFavorite).ToList();
+
+            var groups = new List<IGrouping<string, Contact>>();
+
+            if (favorites.Any())
+            {
+                // Fake un groupement avec la clé spéciale '★ Favoris'
+                var favGroup = favorites.GroupBy(c => "★ Favoris").FirstOrDefault();
+                if (favGroup != null) groups.Add(favGroup);
+            }
             
-            var groups = filtered.GroupBy(c => {
+            var alphaGroups = others.GroupBy(c => {
                 var name = string.IsNullOrEmpty(c.LastName) ? c.FirstName : c.LastName;
                 var letter = string.IsNullOrEmpty(name) ? "#" : name.Substring(0, 1).ToUpper();
                 if (!char.IsLetter(letter[0])) letter = "#";
                 return letter;
             }).OrderBy(g => g.Key).ToList();
+
+            groups.AddRange(alphaGroups);
 
             GroupedContacts.Clear();
             foreach (var group in groups)
