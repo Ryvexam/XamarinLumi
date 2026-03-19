@@ -32,7 +32,7 @@ jobs:
     - name: Install Android SDK Platform 33
       shell: cmd
       run: |
-        echo y | "%ANDROID_HOME%\cmdline-tools\latest\bin\sdkmanager.bat" "platforms;android-33"
+        echo y | "%ANDROID_HOME%\cmdline-tools\latest\bin\sdkmanager.bat" "platforms;android-33" "build-tools;33.0.2"
 
     - name: Restore NuGet Packages
       run: nuget restore LumiContact.sln
