@@ -29,6 +29,10 @@ jobs:
         distribution: 'microsoft'
         java-version: '11'
 
+    - name: Install Android SDK Platform 33
+      run: |
+        echo "y" | "%ANDROID_HOME%\cmdline-tools\latest\bin\sdkmanager.bat" "platforms;android-33"
+
     - name: Restore NuGet Packages
       run: nuget restore LumiContact.sln
 
