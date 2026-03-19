@@ -21,6 +21,12 @@ jobs:
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
 
+    - name: Setup Java 11
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'microsoft'
+        java-version: '11'
+
     - name: Restore NuGet Packages
       run: nuget restore LumiContact.sln
 
