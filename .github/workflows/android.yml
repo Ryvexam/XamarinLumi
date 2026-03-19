@@ -29,10 +29,10 @@ jobs:
         distribution: 'microsoft'
         java-version: '11'
 
-    - name: Install Android SDK Platform 33
+    - name: Install Android SDK Platform 34
       shell: cmd
       run: |
-        echo y | "%ANDROID_HOME%\cmdline-tools\latest\bin\sdkmanager.bat" "platforms;android-33" "build-tools;33.0.2"
+        echo y | "%ANDROID_HOME%\cmdline-tools\latest\bin\sdkmanager.bat" "platforms;android-34" "build-tools;34.0.0"
 
     - name: Restore NuGet Packages
       run: nuget restore LumiContact.sln
