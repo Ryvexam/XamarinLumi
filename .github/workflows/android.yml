@@ -1,0 +1,45 @@
+name: Android Build
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  build-android:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v2
+      with:
+        nuget-version: 'latest'
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'microsoft'
+        java-version: '11'
+
+    - name: Restore NuGet Packages
+      run: nuget restore LumiContact/LumiContact.sln
+
+    - name: Build Android APK
+      run: msbuild LumiContact/LumiContact.Android/LumiContact.Android.csproj /verbosity:normal /t:Rebuild /t:SignAndroidPackage /p:Configuration=Release
+
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: LumiContact-Android-APK
+        path: |
+          LumiContact/LumiContact.Android/bin/Release/*-Signed.apk
+          LumiContact/LumiContact.Android/bin/Release/*.apk
+        if-no-files-found: error
