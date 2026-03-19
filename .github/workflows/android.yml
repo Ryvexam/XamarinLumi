@@ -30,7 +30,7 @@ jobs:
         java-version: '11'
 
     - name: Restore NuGet Packages
-      run: nuget restore LumiContact/LumiContact.sln
+      run: nuget restore LumiContact.sln
 
     - name: Build Android APK
       run: msbuild LumiContact/LumiContact.Android/LumiContact.Android.csproj /verbosity:normal /t:Rebuild /t:SignAndroidPackage /p:Configuration=Release
