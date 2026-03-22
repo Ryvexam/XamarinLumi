@@ -1,0 +1,16 @@
+services:
+  lumicontact-backend:
+    build:
+      context: .
+      dockerfile: LumiContact.Backend/Dockerfile
+    image: lumicontact-backend:latest
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_URLS: ${ASPNETCORE_URLS:-http://0.0.0.0:8080}
+      SyncServer__PublicBaseUrl: ${SYNC_PUBLIC_BASE_URL:-http://localhost:8080}
+      SyncServer__AppKey: ${SYNC_APP_KEY:-lumicontact-public-app}
+      ConnectionStrings__Default: ${SYNC_CONNECTION_STRING:-Data Source=/data/lumicontact.db}
+    volumes:
+      - ./data:/data
+    restart: unless-stopped

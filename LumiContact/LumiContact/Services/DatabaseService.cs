@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using SQLite;
 using LumiContact.ViewModels; // To reference Contact
@@ -11,6 +12,12 @@ namespace LumiContact.Services
     {
         static SQLiteAsyncConnection _database;
 
+        private sealed class TableColumnInfo
+        {
+            [Column("name")]
+            public string Name { get; set; }
+        }
+
         public static async Task Init()
         {
             if (_database != null)
@@ -20,6 +27,10 @@ namespace LumiContact.Services
             _database = new SQLiteAsyncConnection(databasePath);
 
             await _database.CreateTableAsync<Contact>();
+            await EnsureColumnAsync("Contact", "RemoteId", "TEXT");
+            await EnsureColumnAsync("Contact", "RemoteVersion", "INTEGER NOT NULL DEFAULT 0");
+            await EnsureColumnAsync("Contact", "NeedsSync", "INTEGER NOT NULL DEFAULT 0");
+            await EnsureColumnAsync("Contact", "LastSyncedAtUtc", "TEXT");
         }
 
         public static async Task<List<Contact>> GetContactsAsync()
@@ -41,6 +52,23 @@ namespace LumiContact.Services
         {
             await Init();
             return await _database.DeleteAsync(contact);
+        }
+
+        public static async Task<Contact> GetContactByRemoteIdAsync(string remoteId)
+        {
+            await Init();
+            return await _database.Table<Contact>()
+                .Where(contact => contact.RemoteId == remoteId)
+                .FirstOrDefaultAsync();
+        }
+
+        private static async Task EnsureColumnAsync(string tableName, string columnName, string definition)
+        {
+            var columns = await _database.QueryAsync<TableColumnInfo>($"PRAGMA table_info('{tableName}')");
+            if (columns.Any(column => string.Equals(column.Name, columnName, StringComparison.OrdinalIgnoreCase)))
+                return;
+
+            await _database.ExecuteAsync($"ALTER TABLE {tableName} ADD COLUMN {columnName} {definition}");
         }
     }
 }

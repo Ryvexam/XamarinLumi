@@ -124,11 +124,12 @@ namespace LumiContact.Views
                 Resources["InputBg"] = Color.FromHex("#1A1A1A");
                 Resources["ToastBg"] = Color.FromHex("#1A1A1A");
                 Resources["AvatarBg"] = Color.FromHex("#262626");
-                                Resources["HeaderGrad"] = Color.FromHex("#111111");
+                Resources["HeaderGrad"] = Color.FromHex("#111111");
 
                 Resources["TextMainBrush"] = new SolidColorBrush(Color.FromHex("#FFFFFF"));
                 Resources["TextMutedBrush"] = new SolidColorBrush(Color.FromHex("#737373"));
                 Resources["AccentBrush"] = new SolidColorBrush(Color.FromHex("#D4AF37"));
+                Resources["AccentTextBrush"] = new SolidColorBrush(Color.FromHex("#000000"));
             }
             else
             {
@@ -144,12 +145,73 @@ namespace LumiContact.Views
                 Resources["InputBg"] = Color.FromHex("#F2F0EB");
                 Resources["ToastBg"] = Color.FromHex("#FFFFFF");
                 Resources["AvatarBg"] = Color.FromHex("#F2F0EB");
-                                Resources["HeaderGrad"] = Color.FromHex("#FCFBF8");
+                Resources["HeaderGrad"] = Color.FromHex("#FCFBF8");
 
                 Resources["TextMainBrush"] = new SolidColorBrush(Color.FromHex("#1A1A1A"));
                 Resources["TextMutedBrush"] = new SolidColorBrush(Color.FromHex("#8C8C8C"));
                 Resources["AccentBrush"] = new SolidColorBrush(Color.FromHex("#AA8655"));
+                Resources["AccentTextBrush"] = new SolidColorBrush(Color.FromHex("#FFFFFF"));
             }
+        }
+
+        private async void OnLightThemeTapped(object sender, EventArgs e)
+        {
+            await AnimateSettingsTargetAsync(sender);
+            ExecuteCommand(_viewModel?.SetThemeCommand, "light");
+        }
+
+        private async void OnDarkThemeTapped(object sender, EventArgs e)
+        {
+            await AnimateSettingsTargetAsync(sender);
+            ExecuteCommand(_viewModel?.SetThemeCommand, "dark");
+        }
+
+        private async void OnSyncNowTapped(object sender, EventArgs e)
+        {
+            await AnimateSettingsTargetAsync(sender);
+            ExecuteCommand(_viewModel?.SyncCommand);
+        }
+
+        private async void OnImportContactsTapped(object sender, EventArgs e)
+        {
+            await AnimateSettingsTargetAsync(sender);
+            ExecuteCommand(_viewModel?.ImportContactsCommand);
+        }
+
+        private static void ExecuteCommand(System.Windows.Input.ICommand command, object parameter = null)
+        {
+            if (command != null && command.CanExecute(parameter))
+            {
+                command.Execute(parameter);
+            }
+        }
+
+        private static VisualElement ResolveAnimationTarget(object sender)
+        {
+            var element = sender as Element;
+
+            while (element != null)
+            {
+                if (element is VisualElement visualElement)
+                    return visualElement;
+
+                element = element.Parent;
+            }
+
+            return null;
+        }
+
+        private static async Task AnimateSettingsTargetAsync(object sender)
+        {
+            var target = ResolveAnimationTarget(sender);
+            if (target == null)
+                return;
+
+            target.AbortAnimation("SettingsTapScale");
+            target.Scale = 1;
+
+            await target.ScaleTo(0.97, 80, Easing.CubicOut);
+            await target.ScaleTo(1, 140, Easing.CubicIn);
         }
     }
 }

@@ -28,6 +28,10 @@
             <Color x:Key="AvatarBg">#F2F0EB</Color>
             <Color x:Key="HeaderGrad">#FCFBF8</Color>
             <Color x:Key="Transparent">Transparent</Color>
+            <SolidColorBrush x:Key="TextMainBrush" Color="{StaticResource TextMain}" />
+            <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMuted}" />
+            <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource Accent}" />
+            <SolidColorBrush x:Key="AccentTextBrush" Color="{StaticResource AccentText}" />
 
             <Style TargetType="Label">
                 <Setter Property="FontFamily" Value="HelveticaNeue, Helvetica, Arial, sans-serif" />
@@ -245,26 +249,113 @@
                                     <Frame BackgroundColor="Transparent" BorderColor="{DynamicResource Border}" CornerRadius="16" Padding="4" HasShadow="False">
                                         <Grid ColumnDefinitions="*,*">
                                             <!-- Light Mode -->
-                                            <Frame Grid.Column="0" BackgroundColor="{DynamicResource InputBg}" CornerRadius="12" Padding="0,12" HasShadow="False">
+                                            <Frame Grid.Column="0" BackgroundColor="Transparent" CornerRadius="12" Padding="0,12" HasShadow="False">
+                                                <Frame.Triggers>
+                                                    <DataTrigger TargetType="Frame" Binding="{Binding Theme}" Value="light">
+                                                        <Setter Property="BackgroundColor" Value="{DynamicResource InputBg}"/>
+                                                    </DataTrigger>
+                                                </Frame.Triggers>
                                                 <Frame.GestureRecognizers>
-                                                    <TapGestureRecognizer Command="{Binding SetThemeCommand}" CommandParameter="light"/>
+                                                    <TapGestureRecognizer Tapped="OnLightThemeTapped"/>
                                                 </Frame.GestureRecognizers>
                                                 <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="8">
-                                                    <Path Aspect="Uniform" Data="M 8,12 a 4,4 0 1,0 8,0 a 4,4 0 1,0 -8,0 M12 2v2 M12 20v2 M 4.93 4.93 l1.41 1.41 M 17.66 17.66 l1.41 1.41 M2 12h2 M20 12h2 M 6.34 17.66 l-1.41 1.41 M 19.07 4.93 l-1.41 1.41" Stroke="{DynamicResource TextMainBrush}" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="18" HeightRequest="18" VerticalOptions="Center"/>
-                                                    <Label Text="Clair" TextColor="{DynamicResource TextMain}" VerticalOptions="Center"/>
+                                                    <Path Aspect="Uniform" Data="M 8,12 a 4,4 0 1,0 8,0 a 4,4 0 1,0 -8,0 M12 2v2 M12 20v2 M 4.93 4.93 l1.41 1.41 M 17.66 17.66 l1.41 1.41 M2 12h2 M20 12h2 M 6.34 17.66 l-1.41 1.41 M 19.07 4.93 l-1.41 1.41" Stroke="{DynamicResource TextMutedBrush}" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="18" HeightRequest="18" VerticalOptions="Center">
+                                                        <Path.Triggers>
+                                                            <DataTrigger TargetType="Path" Binding="{Binding Theme}" Value="light">
+                                                                <Setter Property="Stroke" Value="{DynamicResource TextMainBrush}"/>
+                                                            </DataTrigger>
+                                                        </Path.Triggers>
+                                                    </Path>
+                                                    <Label Text="Clair" TextColor="{DynamicResource TextMuted}" VerticalOptions="Center">
+                                                        <Label.Triggers>
+                                                            <DataTrigger TargetType="Label" Binding="{Binding Theme}" Value="light">
+                                                                <Setter Property="TextColor" Value="{DynamicResource TextMain}"/>
+                                                            </DataTrigger>
+                                                        </Label.Triggers>
+                                                    </Label>
                                                 </StackLayout>
                                             </Frame>
                                             <!-- Dark Mode -->
                                             <Frame Grid.Column="1" BackgroundColor="Transparent" CornerRadius="12" Padding="0,12" HasShadow="False">
+                                                <Frame.Triggers>
+                                                    <DataTrigger TargetType="Frame" Binding="{Binding Theme}" Value="dark">
+                                                        <Setter Property="BackgroundColor" Value="{DynamicResource InputBg}"/>
+                                                    </DataTrigger>
+                                                </Frame.Triggers>
                                                 <Frame.GestureRecognizers>
-                                                    <TapGestureRecognizer Command="{Binding SetThemeCommand}" CommandParameter="dark"/>
+                                                    <TapGestureRecognizer Tapped="OnDarkThemeTapped"/>
                                                 </Frame.GestureRecognizers>
                                                 <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="8">
-                                                    <Path Aspect="Uniform" Data="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" Stroke="{DynamicResource TextMutedBrush}" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="18" HeightRequest="18" VerticalOptions="Center"/>
-                                                    <Label Text="Sombre" TextColor="{DynamicResource TextMuted}" VerticalOptions="Center"/>
+                                                    <Path Aspect="Uniform" Data="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" Stroke="{DynamicResource TextMutedBrush}" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="18" HeightRequest="18" VerticalOptions="Center">
+                                                        <Path.Triggers>
+                                                            <DataTrigger TargetType="Path" Binding="{Binding Theme}" Value="dark">
+                                                                <Setter Property="Stroke" Value="{DynamicResource TextMainBrush}"/>
+                                                            </DataTrigger>
+                                                        </Path.Triggers>
+                                                    </Path>
+                                                    <Label Text="Sombre" TextColor="{DynamicResource TextMuted}" VerticalOptions="Center">
+                                                        <Label.Triggers>
+                                                            <DataTrigger TargetType="Label" Binding="{Binding Theme}" Value="dark">
+                                                                <Setter Property="TextColor" Value="{DynamicResource TextMain}"/>
+                                                            </DataTrigger>
+                                                        </Label.Triggers>
+                                                    </Label>
                                                 </StackLayout>
                                             </Frame>
                                         </Grid>
+                                    </Frame>
+                                </StackLayout>
+
+                                <!-- Synchronisation -->
+                                <StackLayout Spacing="16">
+                                    <Label Text="SYNCHRONISATION" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource TextMuted}"/>
+                                    <Frame BackgroundColor="Transparent" BorderColor="{DynamicResource Border}" CornerRadius="16" Padding="16" HasShadow="False">
+                                        <StackLayout Spacing="16">
+                                            <StackLayout Spacing="6">
+                                                <Label Text="SERVEUR" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource TextMuted}"/>
+                                                <Frame BackgroundColor="{DynamicResource InputBg}" CornerRadius="14" Padding="14,8" HasShadow="False">
+                                                    <Entry Text="{Binding ServerUrl}" Placeholder="https://contact.ryvexam.fr"
+                                                           Keyboard="Url"
+                                                           TextColor="{DynamicResource TextMain}"
+                                                           PlaceholderColor="{DynamicResource TextMuted}"
+                                                           BackgroundColor="Transparent"
+                                                           FontSize="14"/>
+                                                </Frame>
+                                                <Label Text="Exemple : https://contact.ryvexam.fr" FontSize="12" TextColor="{DynamicResource TextMuted}"/>
+                                                <StackLayout Orientation="Horizontal" Spacing="8">
+                                                    <BoxView WidthRequest="8" HeightRequest="8" CornerRadius="4" VerticalOptions="Center" Color="#D9534F">
+                                                        <BoxView.Triggers>
+                                                            <DataTrigger TargetType="BoxView" Binding="{Binding IsCheckingServerConnection}" Value="True">
+                                                                <Setter Property="Color" Value="#F0AD4E"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger TargetType="BoxView" Binding="{Binding IsServerConnected}" Value="True">
+                                                                <Setter Property="Color" Value="#28A745"/>
+                                                            </DataTrigger>
+                                                        </BoxView.Triggers>
+                                                    </BoxView>
+                                                    <Label Text="{Binding ServerConnectionStatus}" FontSize="12" TextColor="{DynamicResource TextMuted}" VerticalOptions="Center">
+                                                        <Label.Triggers>
+                                                            <DataTrigger TargetType="Label" Binding="{Binding IsCheckingServerConnection}" Value="True">
+                                                                <Setter Property="TextColor" Value="#F0AD4E"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger TargetType="Label" Binding="{Binding IsServerConnected}" Value="True">
+                                                                <Setter Property="TextColor" Value="#28A745"/>
+                                                            </DataTrigger>
+                                                        </Label.Triggers>
+                                                    </Label>
+                                                </StackLayout>
+                                            </StackLayout>
+
+                                            <Frame BackgroundColor="{DynamicResource Accent}" CornerRadius="16" Padding="0,14" HasShadow="False">
+                                                <Frame.GestureRecognizers>
+                                                    <TapGestureRecognizer Tapped="OnSyncNowTapped"/>
+                                                </Frame.GestureRecognizers>
+                                                <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="10">
+                                                    <Path Aspect="Uniform" Data="M12 3v8 M8 7l4 4 4-4 M5 19h14" Stroke="{DynamicResource AccentTextBrush}" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="18" HeightRequest="18" VerticalOptions="Center"/>
+                                                    <Label Text="Synchroniser maintenant" TextColor="{DynamicResource AccentText}" FontAttributes="Bold" VerticalOptions="Center"/>
+                                                </StackLayout>
+                                            </Frame>
+                                        </StackLayout>
                                     </Frame>
                                 </StackLayout>
 
@@ -277,7 +368,7 @@
                                             <!-- Importation contacts -->
                                             <Grid Padding="16" ColumnDefinitions="Auto, *, Auto">
                                                 <Grid.GestureRecognizers>
-                                                    <TapGestureRecognizer Command="{Binding ImportContactsCommand}"/>
+                                                    <TapGestureRecognizer Tapped="OnImportContactsTapped"/>
                                                 </Grid.GestureRecognizers>
                                                 <Frame HeightRequest="40" WidthRequest="40" CornerRadius="20" Padding="0" BackgroundColor="{DynamicResource InputBg}" HasShadow="False">
                                                     <!-- Icon Import -->

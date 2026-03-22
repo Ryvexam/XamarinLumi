@@ -1,5 +1,4 @@
 using System.IO;
-using Android.App;
 using Android.Content;
 using Android.Provider;
 using LumiContact.Services;
@@ -17,7 +16,7 @@ namespace LumiContact.Droid.Services
                 if (string.IsNullOrEmpty(contactId)) return null;
 
                 var uri = ContentUris.WithAppendedId(ContactsContract.Contacts.ContentUri, long.Parse(contactId));
-                using (var stream = ContactsContract.Contacts.OpenContactPhotoInputStream(Application.Context.ContentResolver, uri))
+                using (var stream = ContactsContract.Contacts.OpenContactPhotoInputStream(Android.App.Application.Context.ContentResolver, uri))
                 {
                     if (stream == null) return null;
                     

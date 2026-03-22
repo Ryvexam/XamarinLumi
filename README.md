@@ -1,85 +1,293 @@
-# 📱 LumiContact - Gestionnaire de Contacts Intelligent
+# LumiContact
 
-![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS-lightgrey?style=for-the-badge&logo=android)
-![Framework](https://img.shields.io/badge/Framework-Xamarin.Forms-3498db?style=for-the-badge&logo=xamarin)
-![Language](https://img.shields.io/badge/Language-C%23-239120?style=for-the-badge&logo=c-sharp)
-![Architecture](https://img.shields.io/badge/Architecture-MVVM-ff69b4?style=for-the-badge)
-![Database](https://img.shields.io/badge/Database-SQLite-003B57?style=for-the-badge&logo=sqlite)
-![Status](https://img.shields.io/badge/Status-Completed-success?style=for-the-badge)
+LumiContact est une application mobile de gestion de contacts construite en trois parties:
 
-LumiContact est une application mobile multiplateforme (Android & iOS) développée avec **Xamarin.Forms**. Elle propose une gestion de contacts moderne, fluide et élégante, intégrant des fonctionnalités avancées comme le mode sombre, l'importation de contacts natifs et des interactions par balayage (Swipe).
+- un client mobile Xamarin.Forms
+- un backend .NET ASP.NET Core
+- un canal temps reel par sockets pour propager les changements entre clients
 
----
+Le projet fonctionne comme un carnet de contacts partage. Chaque client garde une base SQLite locale pour l'affichage immediat et l'usage hors ligne, puis synchronise avec le serveur. Quand un client cree, modifie ou supprime un contact, le backend diffuse un evenement socket pour que les autres clients se mettent a jour.
 
-## ✨ Fonctionnalités Principales
+## Vue d'ensemble
 
-*   **Gestion Complète (CRUD) :** Créer, lire, modifier et supprimer des contacts.
-*   **Importation Native :** Importation des contacts depuis le répertoire du téléphone (Google Contacts, iCloud, etc.) avec récupération automatique des photos de profil.
-*   **Favoris & Groupement :** Mise en favoris d'un clic (icônes dynamiques). La liste est automatiquement triée par ordre alphabétique, avec les favoris épinglés en haut (★ Favoris).
-*   **Interactions Modernes :** 
-    *   *Swipe-to-Call* (Balayage à gauche pour appeler).
-    *   *Swipe-to-Delete* (Balayage à droite pour supprimer).
-*   **Personnalisation UI :** Génération de couleurs aléatoires pour les avatars des contacts sans photo.
-*   **Thèmes :** Support complet du Mode Clair et Mode Sombre avec persistance des préférences.
-*   **Protection Mémoire :** Redimensionnement natif des images (Compression) pour éviter les crashs de type *Out Of Memory* lors de l'ajout de photos haute résolution.
+### 1. Client mobile Xamarin
 
----
+Le client est dans `/Users/maximevery/Projects/LumiContactApp/LumiContact`.
 
-## 🏗 Architecture du Projet
+Stack principale:
 
-L'application est architecturée selon le motif de conception **MVVM (Model-View-ViewModel)**. Ce pattern permet de séparer proprement l'interface graphique de la logique métier et des données.
+- `Xamarin.Forms` pour l'interface multiplateforme
+- `Xamarin.Essentials` pour les permissions, preferences, media picker, contacts natifs et lancement telephone/email
+- `SQLite-net-pcl` pour la base locale
+- `DependencyService` pour brancher les services natifs Android et iOS
 
-### 1. Le projet partagé (`LumiContact`)
-C'est ici que se trouve 90% du code de l'application, commun à Android et iOS.
+Structure:
 
-*   **`/Models`** *(Intégré dans ContactViewModel.cs pour ce projet)*
-    *   `Contact` : Représente la structure d'un contact (Id, Prénom, Nom, Téléphone, Photo, IsFavorite, etc.) et configure la table SQLite.
-*   **`/Views`** (L'interface visuelle)
-    *   `MainPage.xaml` : L'interface utilisateur écrite en XAML (Liste, Formulaires modaux, Boutons).
-    *   `MainPage.xaml.cs` : Le "Code-Behind", utilisé **uniquement** pour gérer ce qui est purement visuel (Animations d'apparition des popups, application dynamique des couleurs du thème).
-*   **`/ViewModels`** (Le cerveau)
-    *   `ContactViewModel.cs` (`MainViewModel`) : Contient toute la logique métier. Il charge les données de la base, filtre la recherche, gère l'état de l'interface (modales ouvertes/fermées) et réagit aux clics de l'utilisateur via des `Commands` (`SaveContactCommand`, `ImportContactsCommand`, etc.).
-*   **`/Services`** (Les outils)
-    *   `DatabaseService.cs` : Gère la connexion à la base de données locale **SQLite** et les requêtes (Get, Save, Delete).
-    *   `IImageResizer.cs` & `IContactPhotoService.cs` : Interfaces de *DependencyService* pour faire appel à des fonctionnalités natives spécifiques au système d'exploitation.
+- `/Users/maximevery/Projects/LumiContactApp/LumiContact/LumiContact`
+  - projet partage
+- `/Users/maximevery/Projects/LumiContactApp/LumiContact/LumiContact.Android`
+  - tete Android
+- `/Users/maximevery/Projects/LumiContactApp/LumiContact/LumiContact.iOS`
+  - tete iOS
 
-### 2. Les projets natifs (`LumiContact.Android` & `LumiContact.iOS`)
-Ils contiennent le code spécifique à chaque plateforme.
+### 2. Backend .NET
 
-*   **`MainActivity.cs` / `AppDelegate.cs`** : Les points d'entrée respectifs de l'application sur Android et iOS.
-*   **`Properties/AndroidManifest.xml`** : Déclare les permissions requises sur Android (`READ_CONTACTS`, `READ_EXTERNAL_STORAGE`, etc.).
-*   **`/Services`** (Implémentations natives) :
-    *   `ImageResizer.cs` : Utilise les librairies natives (Android Bitmap / iOS UIImage) pour compresser les photos.
-    *   `ContactPhotoService.cs` : Interroge les API systèmes (`ContactsContract` sur Android, `CNContactStore` sur iOS) pour extraire les vraies photos de profil du téléphone.
+Le backend est dans `/Users/maximevery/Projects/LumiContactApp/backend/LumiContact.Backend`.
 
----
+Stack principale:
 
-## 🛠 Composants Techniques Clés
+- `ASP.NET Core` pour l'API
+- `Entity Framework Core + SQLite` pour la persistence serveur
+- `SignalR` cote serveur
+- `WebSocket` brut en plus pour le client Xamarin
+- stockage disque pour les photos importees
 
-1.  **Xamarin.Forms & XAML :** Création de l'interface utilisateur multiplateforme.
-2.  **Xamarin.Essentials :** Utilisé pour accéder aux fonctionnalités de base du téléphone :
-    *   `Preferences` : Sauvegarde du thème et des paramètres.
-    *   `Contacts.GetAllAsync()` : Lecture du répertoire téléphonique.
-    *   `Permissions` : Demande d'autorisation à l'utilisateur.
-    *   `Launcher` : Lancement de l'application d'appel (`tel:`) et d'email (`mailto:`).
-    *   `MediaPicker` : Sélection de photos depuis la galerie.
-3.  **SQLite-net-pcl :** ORM léger pour la sauvegarde persistante des contacts en local sur l'appareil.
-4.  **DependencyService :** Mécanisme d'injection de dépendances de Xamarin permettant au code partagé d'appeler du code C# spécifique à Android ou iOS (utilisé pour les photos et la compression).
+Le backend expose:
 
----
+- une API REST pour lire et modifier les contacts
+- un point de sante
+- un endpoint de configuration
+- un hub SignalR
+- un endpoint WebSocket pour le temps reel mobile
 
-## 🚀 Installation & Exécution
+### 3. Sockets / temps reel
 
-### Prérequis
-*   Visual Studio 2022 (Windows/Mac) ou Visual Studio Code.
-*   Charge de travail (Workload) "Développement mobile en .NET" (Xamarin) installée.
-*   Un émulateur Android/iOS ou un appareil physique configuré pour le débogage.
+Le temps reel suit ce schema:
 
-### Étapes
-1. Clonez ou téléchargez le dépôt.
-2. Ouvrez la solution `LumiContact.sln` dans Visual Studio.
-3. Restaurez les packages NuGet (clic droit sur la solution > *Restaurer les packages NuGet*).
-4. Définissez `LumiContact.Android` ou `LumiContact.iOS` comme projet de démarrage.
-5. Cliquez sur le bouton "Exécuter" (Play) pour compiler et lancer l'application sur votre émulateur ou appareil.
+1. un client modifie un contact
+2. le client pousse la modification au backend en HTTP
+3. le backend enregistre la modification en base
+4. le backend broadcast un message de changement
+5. les autres clients recoivent l'evenement socket
+6. chaque client relance un pull HTTP pour recharger la liste proprement
 
-*Note pour iOS : L'exécution sur un appareil physique nécessite un compte développeur Apple valide et un Mac (ou une connexion à un Mac depuis Windows).*
+Le client mobile n'utilise pas `SignalR` en direct. Il utilise `ClientWebSocket` vers `/ws/contacts`, car cette approche est plus compatible avec ce projet Xamarin legacy.
+
+## Comment Xamarin fonctionne dans ce projet
+
+Le projet suit une architecture MVVM simple.
+
+### Vue
+
+La vue principale est [MainPage.xaml](/Users/maximevery/Projects/LumiContactApp/LumiContact/LumiContact/Views/MainPage.xaml).
+
+Elle contient plusieurs couches:
+
+- la vue liste des contacts
+- l'overlay de details
+- l'overlay d'ajout/modification
+- l'overlay de parametres
+- le toast de notification
+
+Le code-behind [MainPage.xaml.cs](/Users/maximevery/Projects/LumiContactApp/LumiContact/LumiContact/Views/MainPage.xaml.cs) ne porte que la logique visuelle:
+
+- animations d'ouverture/fermeture des overlays
+- application du theme
+- animation des cartes/boutons dans les parametres
+
+### ViewModel
+
+Le coeur applicatif est dans [ContactViewModel.cs](/Users/maximevery/Projects/LumiContactApp/LumiContact/LumiContact/ViewModels/ContactViewModel.cs).
+
+Ce fichier contient:
+
+- le modele `Contact`
+- le groupement des contacts
+- `MainViewModel`
+
+`MainViewModel` gere:
+
+- chargement des contacts
+- recherche
+- ouverture et fermeture des vues
+- ajout, edition, suppression
+- favoris
+- import de contacts natifs
+- configuration de l'URL serveur
+- synchronisation manuelle
+- reaction aux evenements socket distants
+
+### Services
+
+Services principaux:
+
+- [DatabaseService.cs](/Users/maximevery/Projects/LumiContactApp/LumiContact/LumiContact/Services/DatabaseService.cs)
+  - base SQLite locale
+- [ContactSyncService.cs](/Users/maximevery/Projects/LumiContactApp/LumiContact/LumiContact/Services/ContactSyncService.cs)
+  - API HTTP + WebSocket client
+- `IImageResizer`
+  - redimensionnement de photos
+- `IContactPhotoService`
+  - lecture des photos natives du carnet du telephone
+
+Les implementations natives sont dans:
+
+- `/Users/maximevery/Projects/LumiContactApp/LumiContact/LumiContact.Android/Services`
+- `/Users/maximevery/Projects/LumiContactApp/LumiContact/LumiContact.iOS/Services`
+
+## Comment l'application fonctionne
+
+### Ecran principal
+
+L'utilisateur arrive sur une liste de contacts groupes:
+
+- favoris en haut
+- puis tri alphabetique
+- recherche en direct
+- swipe gauche pour appeler
+- swipe droite pour supprimer
+
+### Vue details
+
+Quand on touche un contact:
+
+- l'overlay de details s'ouvre
+- on voit nom, telephone, email, notes, photo
+- on peut appeler, envoyer un email, modifier ou supprimer
+
+### Vue ajout / edition
+
+Le formulaire permet:
+
+- prenom
+- nom
+- telephone
+- email
+- commentaire
+- photo depuis la galerie
+
+En enregistrement:
+
+1. le contact est ecrit en SQLite
+2. il est marque `NeedsSync`
+3. le client tente un push HTTP vers le backend
+4. si le backend repond, le contact local recupere `RemoteId`, `RemoteVersion` et `LastSyncedAtUtc`
+
+### Vue parametres
+
+L'ecran de parametres contient:
+
+- choix du theme clair/sombre
+- URL du serveur
+- bouton `Synchroniser maintenant`
+- import depuis le telephone
+
+Important:
+
+- si l'URL serveur est vide, elle reste vide
+- l'app ne reinjecte pas d'URL par defaut
+- la sync manuelle affiche un message si aucune URL n'est renseignee
+
+### Import de contacts
+
+Lors d'un import:
+
+1. l'app demande la permission Contacts
+2. elle lit les contacts natifs via `Xamarin.Essentials`
+3. elle tente de recuperer les photos natives via les services Android/iOS
+4. elle ignore les doublons nom/prenom
+5. elle enregistre les nouveaux contacts en local
+6. elle lance ensuite une synchronisation serveur
+
+### Synchronisation
+
+La synchronisation combine deux mecanismes:
+
+- HTTP pour les donnees
+- WebSocket pour les notifications temps reel
+
+Flux:
+
+1. au demarrage, si une URL serveur existe, le client se configure
+2. il ouvre une connexion WebSocket vers le backend
+3. un sync manuel ou un changement local pousse les contacts en attente
+4. le client recupere ensuite la liste distante
+5. quand un autre client change quelque chose, le socket declenche un refresh
+
+## Base locale
+
+La base locale est creee par [DatabaseService.cs](/Users/maximevery/Projects/LumiContactApp/LumiContact/LumiContact/Services/DatabaseService.cs).
+
+Champs importants en plus des donnees contact:
+
+- `RemoteId`
+- `RemoteVersion`
+- `NeedsSync`
+- `LastSyncedAtUtc`
+
+Ces champs servent a faire le lien entre le contact local SQLite et le contact du serveur.
+
+## Backend: fonctionnement
+
+Le backend principal est dans [Program.cs](/Users/maximevery/Projects/LumiContactApp/backend/LumiContact.Backend/Program.cs).
+
+Il gere:
+
+- verification simple par `X-Lumi-App-Key`
+- API REST contacts
+- photos
+- diffusion temps reel
+- generation des URLs publiques
+
+Endpoints utiles:
+
+- `GET /api/health`
+- `GET /api/settings`
+- `GET /api/contacts`
+- `POST /api/contacts`
+- `PUT /api/contacts/{id}`
+- `DELETE /api/contacts/{id}`
+- `GET /hubs/contacts`
+- `GET /ws/contacts`
+
+## Lancer le projet
+
+### Client mobile
+
+Build du projet partage:
+
+```bash
+dotnet build /Users/maximevery/Projects/LumiContactApp/LumiContact/LumiContact/LumiContact.csproj
+```
+
+Build Android:
+
+```bash
+msbuild /Users/maximevery/Projects/LumiContactApp/LumiContact/LumiContact.Android/LumiContact.Android.csproj /t:Build /p:Configuration=Debug /p:Platform=AnyCPU
+```
+
+### Backend local
+
+```bash
+cd /Users/maximevery/Projects/LumiContactApp/backend/LumiContact.Backend
+dotnet run
+```
+
+### Backend Docker
+
+```bash
+cd /Users/maximevery/Projects/LumiContactApp/backend
+cp .env.example .env
+docker compose up -d --build
+```
+
+## Deploiement
+
+Le backend est pense pour etre expose derriere un reverse proxy avec une URL publique du type:
+
+- `https://contact.ryvexam.fr`
+
+Le client mobile stocke cette URL dans les parametres. C'est cette URL qui est utilisee pour:
+
+- l'API HTTP
+- la connexion WebSocket temps reel
+
+## Fichiers importants
+
+- [MainPage.xaml](/Users/maximevery/Projects/LumiContactApp/LumiContact/LumiContact/Views/MainPage.xaml)
+- [MainPage.xaml.cs](/Users/maximevery/Projects/LumiContactApp/LumiContact/LumiContact/Views/MainPage.xaml.cs)
+- [ContactViewModel.cs](/Users/maximevery/Projects/LumiContactApp/LumiContact/LumiContact/ViewModels/ContactViewModel.cs)
+- [DatabaseService.cs](/Users/maximevery/Projects/LumiContactApp/LumiContact/LumiContact/Services/DatabaseService.cs)
+- [ContactSyncService.cs](/Users/maximevery/Projects/LumiContactApp/LumiContact/LumiContact/Services/ContactSyncService.cs)
+- [Program.cs](/Users/maximevery/Projects/LumiContactApp/backend/LumiContact.Backend/Program.cs)
+- [backend/README.md](/Users/maximevery/Projects/LumiContactApp/backend/README.md)
